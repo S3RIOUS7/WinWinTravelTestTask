@@ -1,1 +1,11 @@
-{}
+{
+	"filter": {
+		"Filter": "Filter",
+		"Options": "Options",
+		"loading": "Loading...",
+		"closeFilter": "Close filter",
+		"clearAll": "Clear all",
+		"applyButton": "Apply",
+		"errorLoadingFilter": "Error loading filter: {{message}}"
+	}
+}

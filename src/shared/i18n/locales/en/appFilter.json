@@ -1,0 +1,14 @@
+{
+	"pageTitle": "WinWinTravel frontend test task",
+	"filterButton": "Filter",
+	"loading": "Loading...",
+	"errorLoadingFilters": "Error loading filters: {{message}}",
+	"filterModalTitle": "Filter",
+	"closeFilter": "Close filter",
+	"applyButton": "Apply",
+	"clearAllParameters": "Clear all parameters",
+	"currentSelectedFilters": "Current Selected Filters (JSON):",
+	"selectedOptions": "Selected Options:",
+	"unknownOption": "Unknown Option ({{optionId}})",
+	"unknownFilter": "Unknown Filter ({{filterId}})"
+}
