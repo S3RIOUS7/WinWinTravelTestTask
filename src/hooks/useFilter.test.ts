@@ -8,7 +8,16 @@ describe('useFilters', () => {
 		expect(typeof useFilters).toBe('function')
 	})
 
-	it('returns expected properties from useQuery', () => {
-		expect(useFilters).toBeInstanceOf(Function)
+	it('returns a function that can be called', () => {
+		const hook = useFilters
+		expect(() => {
+			if (typeof hook !== 'function') {
+				throw new Error('useFilters is not a function')
+			}
+		}).not.toThrow()
+	})
+
+	it('has correct function name', () => {
+		expect(useFilters.name).toBe('useFilters')
 	})
 })

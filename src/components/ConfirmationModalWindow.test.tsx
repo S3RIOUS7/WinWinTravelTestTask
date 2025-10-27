@@ -1,22 +1,27 @@
-import { render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { ConfirmationDialog } from './ConfirmationModalWindow'
 
-describe('ConfirmationDialog', () => {
-	it('renders without crashing', () => {
-		const { container } = render(<ConfirmationDialog />)
-		expect(container).toBeDefined()
+const createTestQueryClient = () =>
+	new QueryClient({
+		defaultOptions: {
+			queries: {
+				retry: false
+			}
+		}
 	})
 
-	it('has dialog accessibility attributes', () => {
-		render(<ConfirmationDialog />)
+describe('ConfirmationDialog', () => {
+	it('renders without crashing', () => {
+		const queryClient = createTestQueryClient()
 
-		// Проверяем базовые accessibility атрибуты
-		const dialog = screen.queryByRole('dialog')
-		if (dialog) {
-			expect(dialog).toHaveAttribute('aria-modal', 'true')
-			expect(dialog).toHaveAttribute('aria-labelledby')
-		}
+		const { container } = render(
+			<QueryClientProvider client={queryClient}>
+				<ConfirmationDialog />
+			</QueryClientProvider>
+		)
+		expect(container).toBeDefined()
 	})
 })

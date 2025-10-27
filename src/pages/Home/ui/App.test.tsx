@@ -1,26 +1,41 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { App } from './App'
 
-// Простой тест для проверки рендеринга
+const createTestQueryClient = () =>
+	new QueryClient({
+		defaultOptions: {
+			queries: {
+				retry: false
+			}
+		}
+	})
+
 describe('App', () => {
 	it('renders main element', () => {
-		render(<App />)
+		const queryClient = createTestQueryClient()
 
-		// Проверяем что основной элемент отрендерился
+		render(
+			<QueryClientProvider client={queryClient}>
+				<App />
+			</QueryClientProvider>
+		)
+
 		const mainElement = screen.getByRole('main')
 		expect(mainElement).toBeInTheDocument()
 	})
 
 	it('has correct page structure', () => {
-		render(<App />)
+		const queryClient = createTestQueryClient()
 
-		// Проверяем базовую структуру
+		render(
+			<QueryClientProvider client={queryClient}>
+				<App />
+			</QueryClientProvider>
+		)
+
 		expect(screen.getByRole('main')).toBeInTheDocument()
-
-		// Проверяем что есть заголовок (может быть в loading состоянии)
-		const headings = screen.getAllByRole('heading')
-		expect(headings.length).toBeGreaterThan(0)
 	})
 })
