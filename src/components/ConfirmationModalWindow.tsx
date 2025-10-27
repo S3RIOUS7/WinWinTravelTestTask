@@ -5,13 +5,18 @@ import { useConfirmationStore } from '../store/confirmationStore'
 
 export const ConfirmationDialog: React.FC = () => {
 	const { t } = useTranslation()
-	const { isConfirmationOpen, confirm, cancel, closeConfirmation } =
-		useConfirmationStore()
+	const {
+		isConfirmationOpen,
+		confirm,
+		cancel,
+		closeConfirmation,
+		pendingAction
+	} = useConfirmationStore()
 
 	const dialogId = 'confirmation-dialog'
 	const titleId = `${dialogId}-title`
 
-	if (!isConfirmationOpen) {
+	if (!isConfirmationOpen || !pendingAction) {
 		return null
 	}
 
