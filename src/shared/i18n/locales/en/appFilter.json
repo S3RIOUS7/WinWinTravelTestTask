@@ -8,7 +8,5 @@
 	"applyButton": "Apply",
 	"clearAllParameters": "Clear all parameters",
 	"currentSelectedFilters": "Current Selected Filters (JSON):",
-	"selectedOptions": "Selected Options:",
-	"unknownOption": "Unknown Option ({{optionId}})",
-	"unknownFilter": "Unknown Filter ({{filterId}})"
+	"selectedOptions": "Selected Options:"
 }

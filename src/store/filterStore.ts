@@ -6,47 +6,31 @@ export interface SearchRequestFilter {
 }
 
 interface FilterState {
-	// Основные состояния
 	selectedFilters: SearchRequestFilter
 	tempSelectedFilters: SearchRequestFilter
 	isFilterModalOpen: boolean
-	isConfirmationOpen: boolean
-	pendingChanges: SearchRequestFilter | null
 
-	// Действия для модалки фильтра
 	openFilterModal: () => void
 	closeFilterModal: () => void
-
-	// Действия для временных фильтров
-	setTempSelectedFilters: (filters: SearchRequestFilter) => void
-	updateTempFilter: (filterId: string, optionIds: string[]) => void
 	toggleTempOption: (filterId: string, optionId: string) => void
-	clearTempFilter: (filterId: string) => void
 	clearAllTempFilters: () => void
-	resetTempFilters: () => void
-
-	// Действия для диалога подтверждения
-	openConfirmation: (pendingChanges: SearchRequestFilter) => void
-	closeConfirmation: () => void
-	applyChanges: () => void
+	applyFilters: () => void
 	discardChanges: () => void
-
-	// Сброс всего
 	resetAllFilters: () => void
+
+	hasSelectedFilters: () => boolean
+	hasTempSelectedFilters: () => boolean
+	hasChanges: () => boolean
 }
 
 export const useFilterStore = create<FilterState>()(
 	persist(
 		(set, get) => ({
-			// Начальные состояния
 			selectedFilters: {},
 			tempSelectedFilters: {},
 			isFilterModalOpen: false,
-			isConfirmationOpen: false,
-			pendingChanges: null,
 
 			openFilterModal: () => {
-				// Синхронизируем временные фильтры с текущими при открытии
 				const { selectedFilters } = get()
 				set({
 					isFilterModalOpen: true,
@@ -57,114 +41,83 @@ export const useFilterStore = create<FilterState>()(
 			closeFilterModal: () => {
 				set({
 					isFilterModalOpen: false,
-					// Сбрасываем временные изменения при закрытии без применения
 					tempSelectedFilters: { ...get().selectedFilters }
 				})
 			},
 
-			// Действия для временных фильтров
-			setTempSelectedFilters: filters => {
-				set({ tempSelectedFilters: filters })
-			},
-
-			updateTempFilter: (filterId, optionIds) => {
-				set(state => ({
-					tempSelectedFilters: {
-						...state.tempSelectedFilters,
-						[filterId]: optionIds
-					}
-				}))
-			},
-
-			toggleTempOption: (filterId, optionId) => {
+			toggleTempOption: (filterId: string, optionId: string) => {
 				set(state => {
 					const currentOptions = state.tempSelectedFilters[filterId] || []
 					const newOptions = currentOptions.includes(optionId)
 						? currentOptions.filter(id => id !== optionId)
 						: [...currentOptions, optionId]
 
-					return {
-						tempSelectedFilters: {
-							...state.tempSelectedFilters,
-							[filterId]: newOptions
-						}
-					}
-				})
-			},
-
-			clearTempFilter: filterId => {
-				set(state => ({
-					tempSelectedFilters: {
+					const newTempFilters = {
 						...state.tempSelectedFilters,
-						[filterId]: []
+						[filterId]: newOptions
 					}
-				}))
+
+					if (newOptions.length === 0) {
+						delete newTempFilters[filterId]
+					}
+
+					return { tempSelectedFilters: newTempFilters }
+				})
 			},
 
 			clearAllTempFilters: () => {
 				set({ tempSelectedFilters: {} })
 			},
 
-			resetTempFilters: () => {
-				const { selectedFilters } = get()
-				set({ tempSelectedFilters: { ...selectedFilters } })
-			},
-
-			// Действия для диалога подтверждения
-			openConfirmation: pendingChanges => {
+			applyFilters: () => {
+				const { tempSelectedFilters } = get()
 				set({
-					isConfirmationOpen: true,
-					pendingChanges
+					selectedFilters: { ...tempSelectedFilters },
+					isFilterModalOpen: false
 				})
-			},
-
-			closeConfirmation: () => {
-				set({
-					isConfirmationOpen: false,
-					pendingChanges: null
-				})
-			},
-
-			applyChanges: () => {
-				const state = get()
-				if (state.pendingChanges) {
-					set({
-						selectedFilters: state.pendingChanges,
-						tempSelectedFilters: state.pendingChanges,
-						isConfirmationOpen: false,
-						isFilterModalOpen: false,
-						pendingChanges: null
-					})
-				}
 			},
 
 			discardChanges: () => {
-				const state = get()
+				const { selectedFilters } = get()
 				set({
-					tempSelectedFilters: state.selectedFilters,
-					isConfirmationOpen: false,
-					isFilterModalOpen: false,
-					pendingChanges: null
+					tempSelectedFilters: { ...selectedFilters },
+					isFilterModalOpen: false
 				})
 			},
 
-			// Полный сброс
 			resetAllFilters: () => {
 				set({
 					selectedFilters: {},
 					tempSelectedFilters: {},
-					isFilterModalOpen: false,
-					isConfirmationOpen: false,
-					pendingChanges: null
+					isFilterModalOpen: false
 				})
+			},
+
+			hasSelectedFilters: () => {
+				const { selectedFilters } = get()
+				return Object.values(selectedFilters).some(
+					options => options.length > 0
+				)
+			},
+
+			hasTempSelectedFilters: () => {
+				const { tempSelectedFilters } = get()
+				return Object.values(tempSelectedFilters).some(
+					options => options.length > 0
+				)
+			},
+
+			hasChanges: () => {
+				const { selectedFilters, tempSelectedFilters } = get()
+				return (
+					JSON.stringify(selectedFilters) !==
+					JSON.stringify(tempSelectedFilters)
+				)
 			}
 		}),
 		{
 			name: 'filter-storage',
-			partialize: state => ({
-				selectedFilters: state.selectedFilters
-				// Сохраняем только выбранные фильтры, не UI состояния
-			})
+			partialize: state => ({ selectedFilters: state.selectedFilters })
 		}
 	)
 )
