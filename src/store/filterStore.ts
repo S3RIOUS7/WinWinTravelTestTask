@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export interface SearchRequestFilter {
-	[filterId: string]: string[]
-}
+import { FilterType } from '@/shared/api/types/Filter'
+import {
+	SearchRequestFilter,
+	SearchRequestOptions
+} from '@/shared/api/types/SearchRequest/SearchRequestFilter'
 
 interface FilterState {
 	selectedFilters: SearchRequestFilter
@@ -26,53 +28,79 @@ interface FilterState {
 export const useFilterStore = create<FilterState>()(
 	persist(
 		(set, get) => ({
-			selectedFilters: {},
-			tempSelectedFilters: {},
+			selectedFilters: [],
+			tempSelectedFilters: [],
 			isFilterModalOpen: false,
 
 			openFilterModal: () => {
 				const { selectedFilters } = get()
 				set({
 					isFilterModalOpen: true,
-					tempSelectedFilters: { ...selectedFilters }
+					tempSelectedFilters: JSON.parse(JSON.stringify(selectedFilters))
 				})
 			},
 
 			closeFilterModal: () => {
 				set({
 					isFilterModalOpen: false,
-					tempSelectedFilters: { ...get().selectedFilters }
+					tempSelectedFilters: JSON.parse(JSON.stringify(get().selectedFilters))
 				})
 			},
 
 			toggleTempOption: (filterId: string, optionId: string) => {
 				set(state => {
-					const currentOptions = state.tempSelectedFilters[filterId] || []
-					const newOptions = currentOptions.includes(optionId)
-						? currentOptions.filter(id => id !== optionId)
-						: [...currentOptions, optionId]
+					const tempFilters: SearchRequestOptions[] = [
+						...state.tempSelectedFilters
+					]
+					const existingFilterIndex = tempFilters.findIndex(
+						// eslint-disable-next-line id-length
+						(f: SearchRequestOptions) => f.id === filterId
+					)
 
-					const newTempFilters = {
-						...state.tempSelectedFilters,
-						[filterId]: newOptions
+					if (existingFilterIndex >= 0) {
+						const existingFilter = { ...tempFilters[existingFilterIndex] }
+						const optionIndex = existingFilter.optionsIds.indexOf(optionId)
+
+						if (optionIndex >= 0) {
+							// Remove option
+							existingFilter.optionsIds = existingFilter.optionsIds.filter(
+								id => id !== optionId
+							)
+							// Remove filter if no options left
+							if (existingFilter.optionsIds.length === 0) {
+								tempFilters.splice(existingFilterIndex, 1)
+							} else {
+								tempFilters[existingFilterIndex] = existingFilter
+							}
+						} else {
+							// Add option
+							existingFilter.optionsIds = [
+								...existingFilter.optionsIds,
+								optionId
+							]
+							tempFilters[existingFilterIndex] = existingFilter
+						}
+					} else {
+						// Create new filter
+						tempFilters.push({
+							id: filterId,
+							type: FilterType.OPTION,
+							optionsIds: [optionId]
+						})
 					}
 
-					if (newOptions.length === 0) {
-						delete newTempFilters[filterId]
-					}
-
-					return { tempSelectedFilters: newTempFilters }
+					return { tempSelectedFilters: tempFilters }
 				})
 			},
 
 			clearAllTempFilters: () => {
-				set({ tempSelectedFilters: {} })
+				set({ tempSelectedFilters: [] })
 			},
 
 			applyFilters: () => {
 				const { tempSelectedFilters } = get()
 				set({
-					selectedFilters: { ...tempSelectedFilters },
+					selectedFilters: JSON.parse(JSON.stringify(tempSelectedFilters)),
 					isFilterModalOpen: false
 				})
 			},
@@ -80,30 +108,30 @@ export const useFilterStore = create<FilterState>()(
 			discardChanges: () => {
 				const { selectedFilters } = get()
 				set({
-					tempSelectedFilters: { ...selectedFilters },
+					tempSelectedFilters: JSON.parse(JSON.stringify(selectedFilters)),
 					isFilterModalOpen: false
 				})
 			},
 
 			resetAllFilters: () => {
 				set({
-					selectedFilters: {},
-					tempSelectedFilters: {},
+					selectedFilters: [],
+					tempSelectedFilters: [],
 					isFilterModalOpen: false
 				})
 			},
 
 			hasSelectedFilters: () => {
 				const { selectedFilters } = get()
-				return Object.values(selectedFilters).some(
-					options => options.length > 0
+				return selectedFilters.some(
+					(filter: SearchRequestOptions) => filter.optionsIds.length > 0
 				)
 			},
 
 			hasTempSelectedFilters: () => {
 				const { tempSelectedFilters } = get()
-				return Object.values(tempSelectedFilters).some(
-					options => options.length > 0
+				return tempSelectedFilters.some(
+					(filter: SearchRequestOptions) => filter.optionsIds.length > 0
 				)
 			},
 

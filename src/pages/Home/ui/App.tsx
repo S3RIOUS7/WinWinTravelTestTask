@@ -153,25 +153,27 @@ export const App = () => {
 						className="flex flex-wrap gap-2"
 						role="list"
 					>
-						{Object.entries(selectedFilters).map(([filterId, optionIds]) => {
-							const filterName = getFilterName(filterId)
-							return optionIds.map(optionId => {
-								const optionName = getOptionName(filterId, optionId)
-								if (!filterName || !optionName) {
-									return null
-								}
+						{selectedFilters.map(
+							(filter: { id: string; optionsIds: string[] }) => {
+								const filterName = getFilterName(filter.id)
+								return filter.optionsIds.map((optionId: string) => {
+									const optionName = getOptionName(filter.id, optionId)
+									if (!filterName || !optionName) {
+										return null
+									}
 
-								return (
-									<span
-										key={`${filterId}-${optionId}`}
-										className="px-3 py-2 bg-blue-100 text-blue-500 rounded-lg text-sm font-medium"
-										role="listitem"
-									>
-										{filterName}: {optionName}
-									</span>
-								)
-							})
-						})}
+									return (
+										<span
+											key={`${filter.id}-${optionId}`}
+											className="px-3 py-2 bg-blue-100 text-blue-500 rounded-lg text-sm font-medium"
+											role="listitem"
+										>
+											{filterName}: {optionName}
+										</span>
+									)
+								})
+							}
+						)}
 					</div>
 				</section>
 			)}

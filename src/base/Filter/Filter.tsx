@@ -11,6 +11,7 @@ export const FilterModal: React.FC = () => {
 	const { t } = useTranslation('appFilter')
 
 	const { filters, isLoading } = useAppStore()
+
 	const {
 		isFilterModalOpen,
 		tempSelectedFilters,
@@ -24,8 +25,6 @@ export const FilterModal: React.FC = () => {
 	} = useFilterStore()
 
 	const { openConfirmation } = useConfirmationStore()
-
-	const columnConfig = [2, 3, 2, 1, 3]
 
 	const handleOptionToggle = (filterId: string, optionId: string) => {
 		toggleTempOption(filterId, optionId)
@@ -44,6 +43,15 @@ export const FilterModal: React.FC = () => {
 		} else {
 			closeFilterModal()
 		}
+	}
+
+	// Функция для получения выбранных опций для фильтра
+	const getSelectedOptionsForFilter = (filterId: string): string[] => {
+		const filterData = tempSelectedFilters.find(
+			// eslint-disable-next-line id-length
+			(f: { id: string }) => f.id === filterId
+		)
+		return filterData?.optionsIds || []
 	}
 
 	if (!isFilterModalOpen) {
@@ -141,8 +149,8 @@ export const FilterModal: React.FC = () => {
 							className="space-y-8"
 							role="application"
 						>
-							{filters?.map((filter: FilterItem, index: number) => {
-								const selectedOptions = tempSelectedFilters[filter.id] || []
+							{filters?.map((filter: FilterItem) => {
+								const selectedOptions = getSelectedOptionsForFilter(filter.id)
 								const filterSectionId = `filter-section-${filter.id}`
 
 								return (
@@ -166,40 +174,44 @@ export const FilterModal: React.FC = () => {
 												{t('optionsForFilter', { filterName: filter.name })}
 											</legend>
 											<div
-												className="grid grid-cols-1 gap-2"
+												className="grid gap-2"
 												style={{
-													gridTemplateColumns: `repeat(${columnConfig[index]}, minmax(0, 1fr))`
+													gridTemplateColumns:
+														'repeat(auto-fit, minmax(280px, 1fr))'
 												}}
 											>
-												{filter.options.map(option => {
-													const isSelected = selectedOptions.includes(option.id)
-													return (
-														<div
-															key={option.id}
-															className="flex items-center py-0"
-														>
+												{filter.options.map(
+													(option: { id: string; name: string }) => {
+														const isSelected = selectedOptions.includes(
+															option.id
+														)
+														return (
 															<div
-																role="checkbox"
-																aria-checked={isSelected}
-																tabIndex={0}
-																className="
+																key={option.id}
+																className="flex items-center py-0"
+															>
+																<div
+																	role="checkbox"
+																	aria-checked={isSelected}
+																	tabIndex={0}
+																	className="
                                   flex items-center cursor-pointer
                                   hover:bg-gray-50 transition-colors duration-200
                                   rounded p-1
                                 "
-																onClick={() =>
-																	handleOptionToggle(filter.id, option.id)
-																}
-																onKeyDown={e => {
-																	if (e.key === 'Enter' || e.key === ' ') {
-																		e.preventDefault()
+																	onClick={() =>
 																		handleOptionToggle(filter.id, option.id)
 																	}
-																}}
-																aria-describedby={`${filterSectionId}-heading`}
-															>
-																<div
-																	className={`
+																	onKeyDown={e => {
+																		if (e.key === 'Enter' || e.key === ' ') {
+																			e.preventDefault()
+																			handleOptionToggle(filter.id, option.id)
+																		}
+																	}}
+																	aria-describedby={`${filterSectionId}-heading`}
+																>
+																	<div
+																		className={`
                                     w-6 h-6 border-2 rounded mr-3 flex items-center justify-center
                                     ${
 																			isSelected
@@ -207,32 +219,33 @@ export const FilterModal: React.FC = () => {
 																				: 'border-gray-300'
 																		}
                                   `}
-																	aria-hidden="true"
-																>
-																	{isSelected && (
-																		<svg
-																			className="w-4 h-4 text-white"
-																			fill="currentColor"
-																			viewBox="0 0 20 20"
-																		>
-																			<path
-																				fillRule="evenodd"
-																				d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-																				clipRule="evenodd"
-																			/>
-																		</svg>
-																	)}
+																		aria-hidden="true"
+																	>
+																		{isSelected && (
+																			<svg
+																				className="w-4 h-4 text-white"
+																				fill="currentColor"
+																				viewBox="0 0 20 20"
+																			>
+																				<path
+																					fillRule="evenodd"
+																					d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+																					clipRule="evenodd"
+																				/>
+																			</svg>
+																		)}
+																	</div>
+																</div>
+
+																<div className="flex-1">
+																	<h3 className="font-inter font-normal text-base text-gray-500 leading-none">
+																		{option.name}
+																	</h3>
 																</div>
 															</div>
-
-															<div className="flex-1">
-																<h3 className="font-inter font-normal text-base text-gray-500 leading-none">
-																	{option.name}
-																</h3>
-															</div>
-														</div>
-													)
-												})}
+														)
+													}
+												)}
 											</div>
 										</fieldset>
 									</section>
