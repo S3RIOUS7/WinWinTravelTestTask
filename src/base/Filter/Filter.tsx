@@ -10,7 +10,7 @@ import { useFilterStore } from '../../store/filterStore'
 export const FilterModal: React.FC = () => {
 	const { t } = useTranslation('appFilter')
 
-	const { filters, isLoading } = useAppStore()
+	const { filters } = useAppStore()
 
 	const {
 		isFilterModalOpen,
@@ -132,86 +132,71 @@ export const FilterModal: React.FC = () => {
 				</header>
 
 				<main className="overflow-y-auto max-h-[60vh] p-6 scrollbar-hide">
-					{isLoading ? (
-						<div
-							className="flex justify-center items-center py-12"
-							role="status"
-							aria-live="polite"
-						>
-							<div
-								className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgba(255,95,0,1)]"
-								aria-hidden="true"
-							></div>
-							<span className="sr-only">{t('loading')}</span>
-						</div>
-					) : (
-						<div
-							className="space-y-8"
-							role="application"
-						>
-							{filters?.map((filter: FilterItem) => {
-								const selectedOptions = getSelectedOptionsForFilter(filter.id)
-								const filterSectionId = `filter-section-${filter.id}`
+					<div
+						className="space-y-8"
+						role="application"
+					>
+						{filters?.map((filter: FilterItem) => {
+							const selectedOptions = getSelectedOptionsForFilter(filter.id)
+							const filterSectionId = `filter-section-${filter.id}`
 
-								return (
-									<section
-										key={filter.id}
-										id={filterSectionId}
-										className="border-b border-gray-200 pb-6 last:border-b-0"
-										aria-labelledby={`${filterSectionId}-heading`}
-									>
-										<header className="mb-4">
-											<h2
-												id={`${filterSectionId}-heading`}
-												className="font-inter font-medium text-2xl text-gray-500 leading-none"
-											>
-												{filter.name}
-											</h2>
-										</header>
+							return (
+								<section
+									key={filter.id}
+									id={filterSectionId}
+									className="border-b border-gray-200 pb-6 last:border-b-0"
+									aria-labelledby={`${filterSectionId}-heading`}
+								>
+									<header className="mb-4">
+										<h2
+											id={`${filterSectionId}-heading`}
+											className="font-inter font-medium text-2xl text-gray-500 leading-none"
+										>
+											{filter.name}
+										</h2>
+									</header>
 
-										<fieldset>
-											<legend className="sr-only">
-												{t('optionsForFilter', { filterName: filter.name })}
-											</legend>
-											<div
-												className="grid gap-2"
-												style={{
-													gridTemplateColumns:
-														'repeat(auto-fit, minmax(280px, 1fr))'
-												}}
-											>
-												{filter.options.map(
-													(option: { id: string; name: string }) => {
-														const isSelected = selectedOptions.includes(
-															option.id
-														)
-														return (
+									<fieldset>
+										<legend className="sr-only">
+											{t('optionsForFilter', { filterName: filter.name })}
+										</legend>
+										<div
+											className="grid gap-2"
+											style={{
+												gridTemplateColumns:
+													'repeat(auto-fit, minmax(280px, 1fr))'
+											}}
+										>
+											{filter.options.map(
+												(option: { id: string; name: string }) => {
+													const isSelected = selectedOptions.includes(option.id)
+													return (
+														<div
+															key={option.id}
+															className="flex items-center py-0"
+														>
 															<div
-																key={option.id}
-																className="flex items-center py-0"
-															>
-																<div
-																	role="checkbox"
-																	aria-checked={isSelected}
-																	tabIndex={0}
-																	className="
+																role="checkbox"
+																aria-checked={isSelected}
+																tabIndex={0}
+																className="
                                   flex items-center cursor-pointer
                                   hover:bg-gray-50 transition-colors duration-200
                                   rounded p-1
                                 "
-																	onClick={() =>
+																onClick={() =>
+																	handleOptionToggle(filter.id, option.id)
+																}
+																onKeyDown={e => {
+																	if (e.key === 'Enter' || e.key === ' ') {
+																		e.preventDefault()
 																		handleOptionToggle(filter.id, option.id)
 																	}
-																	onKeyDown={e => {
-																		if (e.key === 'Enter' || e.key === ' ') {
-																			e.preventDefault()
-																			handleOptionToggle(filter.id, option.id)
-																		}
-																	}}
-																	aria-describedby={`${filterSectionId}-heading`}
-																>
-																	<div
-																		className={`
+																}}
+																aria-describedby={`${filterSectionId}-heading`}
+															>
+																<div
+																	className={`
                                     w-6 h-6 border-2 rounded mr-3 flex items-center justify-center
                                     ${
 																			isSelected
@@ -219,40 +204,39 @@ export const FilterModal: React.FC = () => {
 																				: 'border-gray-300'
 																		}
                                   `}
-																		aria-hidden="true"
-																	>
-																		{isSelected && (
-																			<svg
-																				className="w-4 h-4 text-white"
-																				fill="currentColor"
-																				viewBox="0 0 20 20"
-																			>
-																				<path
-																					fillRule="evenodd"
-																					d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-																					clipRule="evenodd"
-																				/>
-																			</svg>
-																		)}
-																	</div>
-																</div>
-
-																<div className="flex-1">
-																	<h3 className="font-inter font-normal text-base text-gray-500 leading-none">
-																		{option.name}
-																	</h3>
+																	aria-hidden="true"
+																>
+																	{isSelected && (
+																		<svg
+																			className="w-4 h-4 text-white"
+																			fill="currentColor"
+																			viewBox="0 0 20 20"
+																		>
+																			<path
+																				fillRule="evenodd"
+																				d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+																				clipRule="evenodd"
+																			/>
+																		</svg>
+																	)}
 																</div>
 															</div>
-														)
-													}
-												)}
-											</div>
-										</fieldset>
-									</section>
-								)
-							})}
-						</div>
-					)}
+
+															<div className="flex-1">
+																<h3 className="font-inter font-normal text-base text-gray-500 leading-none">
+																	{option.name}
+																</h3>
+															</div>
+														</div>
+													)
+												}
+											)}
+										</div>
+									</fieldset>
+								</section>
+							)
+						})}
+					</div>
 				</main>
 
 				<footer className="flex justify-between items-center p-6 border-t border-gray-200">
@@ -270,7 +254,6 @@ export const FilterModal: React.FC = () => {
                 disabled:opacity-50 disabled:cursor-not-allowed
               "
 							onClick={handleApply}
-							disabled={isLoading}
 						>
 							{t('applyButton')}
 						</button>
@@ -287,7 +270,7 @@ export const FilterModal: React.FC = () => {
                 disabled:opacity-50 disabled:cursor-not-allowed
               "
 							onClick={handleClearAll}
-							disabled={isLoading || !hasTempSelectedFilters()}
+							disabled={!hasTempSelectedFilters()}
 						>
 							{t('clearAllParameters')}
 						</button>

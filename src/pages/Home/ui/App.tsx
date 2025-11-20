@@ -13,33 +13,16 @@ export const App = () => {
 	const { data: filtersData, isLoading, error } = useFilters()
 
 	// Stores
-	const {
-		filters,
-		setFilters,
-		setLoading,
-		setError,
-		getFilterName,
-		getOptionName
-	} = useAppStore()
+	const { filters, setFilters, getFilterName, getOptionName } = useAppStore()
 
 	const { selectedFilters, hasSelectedFilters, openFilterModal } =
 		useFilterStore()
-
-	useEffect(() => {
-		setLoading(isLoading)
-	}, [isLoading, setLoading])
 
 	useEffect(() => {
 		if (filtersData) {
 			setFilters(filtersData)
 		}
 	}, [filtersData, setFilters])
-
-	useEffect(() => {
-		if (error) {
-			setError(error.message)
-		}
-	}, [error, setError])
 
 	const shouldShowSelectedFilters =
 		hasSelectedFilters() && !isLoading && filters
